@@ -1,151 +1,136 @@
-# Verified Mission Control
+﻿# Verified Mission Control
 
 > **Goal Contracts for the Agent-Native Web**
 
-**WebMCP gives agents tools. Verified Mission Control gives those tools accountability.**
+**WebMCP gives agents tools. Verified Mission Control decides what the agent may decide.**
 
 Live production: https://verified-mission-control-webmcp.vercel.app
 
-Built for **The WebMCP Challenge 2026** by Future Ability. Licensed under the **MIT License**.
+Built for **The WebMCP Challenge 2026** by Future Ability. MIT licensed.
 
 ## What this is
 
-Verified Mission Control is a **WebMCP-native governance and execution layer for agents**. It puts a human-defined Goal Contract around typed browser tools, verifies whether actions actually satisfy that contract, recovers from failed paths without weakening the original goal, enforces human authority before irreversible actions, and emits an evidence receipt when the mission is complete.
+Verified Mission Control is a **WebMCP-native decision control plane for agents**. It keeps the original human goal immutable, lets the agent explore and compose many plans, compresses the meaningful trade-offs for human judgment, turns those judgments into a bounded authority envelope, repairs execution inside that envelope, and records the full decision provenance.
 
-**Supplier selection is only the demo scenario.** Procurement makes the control loop easy to inspect, but the product idea is the reusable governance layer:
+**Sensor fulfillment is only the demo scenario.** The reusable loop is:
 
-`Goal → Authority → Typed WebMCP tools → Verification → Recovery → Human gate → Evidence`
+`Goal → Explore → Generate plans → Verify → Compress trade-offs → Human decision → Bounded repair → Final authority → Evidence`
+
+## The upgraded demo
+
+The human Goal Contract is:
+
+- Need at least **500 sensors**
+- Delivery **≤ 7 days**
+- Base budget **≤ $8,500**
+- **Exact model** required
+- Final irreversible commitment requires explicit human approval
+
+The market is intentionally fragmented:
+
+- Atlas: 300 units / 6 days / $4,500 / exact spec
+- Beacon: 500 units / 11 days / $8,400 / exact spec
+- Cobalt: 200 units / 6 days / $5,900 / exact spec
+- Delta: 500 units / 5 days / $8,200 / substitute model
+
+No single option satisfies every original constraint. The agent composes **17 raw combinations**, rejects impossible or dominated routes, and compresses them to three human-relevant plans:
+
+1. Preserve deadline + exact spec → Atlas 300 + Cobalt 200 → **budget +$1,900**
+2. Preserve budget + exact spec → Beacon 500 → **deadline +4 days**
+3. Preserve deadline + budget → Delta 500 → **substitute model**
+
+The human does not approve a supplier. The human chooses which constraint may move.
+
+## Bounded authority + local plan repair
+
+In the recommended path, the human says:
+
+- Deadline stays ≤ 7 days
+- Exact specification stays required
+- Budget may increase to $10,500
+- Split orders are allowed
+- Recovery may overbuy up to 10%
+
+Execution then changes: Cobalt drops from 200 available units to 150. The agent does **not restart** and does not ask the human to solve the arithmetic. It preserves Atlas 300 + Cobalt 150 and adds Echo Reserve MOQ 100.
+
+Final repaired plan:
+
+- 550 exact-spec units
+- 6 days
+- $10,125
+- inside the human-authorized decision envelope
+
+Because the repair stays inside the pre-authorized decision space, the agent may repair autonomously. Final irreversible commitment is still blocked until a second explicit human decision.
+
+## Native WebMCP tools
+
+The app registers nine native tools with `document.modelContext.registerTool(...)`:
+
+1. `get_goal_contract()`
+2. `discover_fulfillment_options()`
+3. `generate_candidate_plans()`
+4. `verify_candidate_plans()`
+5. `request_human_decision()`
+6. `repair_plan()`
+7. `request_final_approval()`
+8. `commit_plan()`
+9. `get_evidence_receipt()`
+
+Human authorization itself is deliberately **not** exposed as an agent-callable tool. The agent can request a decision, but only a human UI action can create or expand authority.
+
+## Enforced gates
+
+Before a human trade-off decision:
+
+```json
+{ "ok": false, "error": "HUMAN_TRADEOFF_DECISION_REQUIRED" }
+```
+
+After the trade-off is authorized and the plan is repaired, but before final irreversible approval:
+
+```json
+{ "ok": false, "error": "FINAL_COMMIT_APPROVAL_REQUIRED" }
+```
+
+Only after explicit final approval can `commit_plan()` return `GOAL_ACHIEVED`.
+
+## Decision provenance receipt
+
+The final receipt records:
+
+- original Goal Contract
+- options explored
+- 17 → 3 plan compression
+- human trade-off decision
+- execution disruption
+- autonomous repair
+- final human approval
+- final verified outcome
+
+This is stronger than a success log: it explains **why the agent was allowed to do what it did**.
 
 ## Why WebMCP
 
-Traditional browser automation often has to infer intent from text, selectors, screenshots, and layout. WebMCP lets the website expose explicit typed actions with schemas and descriptions.
+Traditional UI automation can click the next-looking button. WebMCP gives the site a typed action surface. Verified Mission Control uses that surface as the substrate for a governed decision loop: machine-readable goals, explicit plan verification, typed errors at authority boundaries, bounded repair, and inspectable evidence.
 
-Verified Mission Control uses that typed surface as the execution boundary, then adds the layer WebMCP itself does not provide:
+## Trust + implementation
 
-- a human-owned Goal Contract,
-- outcome verification,
-- recovery that preserves the original constraints,
-- technically enforced human authority,
-- and an inspectable evidence receipt.
+- Public source code
+- MIT license
+- Native `document.modelContext.registerTool(...)`
+- No credentials or secrets required
+- Deterministic demo data; no real order is placed
+- `Origin-Agent-Cluster: ?1` for current Chrome WebMCP isolation requirements
+- `Permissions-Policy: tools=(self)`
+- CSP, `nosniff`, Referrer Policy, and Vercel HSTS
 
-The human and the agent share the same application state. Tool calls update the visible UI immediately.
+## Judge path
 
-## Native WebMCP implementation
-
-The app registers eight native tools with `document.modelContext.registerTool(...)`:
-
-1. `get_goal_contract()`
-2. `search_suppliers()`
-3. `verify_supplier({ supplier_id })`
-4. `recover_from_failure({ failed_supplier_id })`
-5. `select_supplier({ supplier_id })`
-6. `request_human_approval()`
-7. `commit_selection()`
-8. `get_evidence_receipt()`
-
-The native tool source is in [`app.js`](./app.js).
-
-Example:
-
-```js
-document.modelContext.registerTool({
-  name: "commit_selection",
-  description: "Finalize only after verification and any required human approval.",
-  inputSchema: { type: "object", properties: {}, additionalProperties: false },
-  execute: toolCommitSelection
-});
-```
-
-## The enforced authority proof
-
-`commit_selection()` is not a visual warning. It is a real gate in the tool implementation.
-
-If a verified supplier is selected but human approval is required and has not been granted, the tool returns:
-
-```json
-{
-  "ok": false,
-  "error": "HUMAN_APPROVAL_REQUIRED",
-  "next": "Call request_human_approval and wait for the human."
-}
-```
-
-The guided judge path intentionally attempts this blocked commit before requesting approval, so the behavior is visible in the live UI.
-
-## 60-second judge path
-
-1. Run **Run the judge path**.
-2. The human Goal Contract is locked.
-3. Atlas Components is discovered but fails the 7-day delivery constraint.
-4. The agent recovers to Nova Supply **without changing the Goal Contract**.
-5. Nova passes verification and is selected.
-6. The app intentionally calls `commit_selection()` before approval.
-7. The commit is blocked with `HUMAN_APPROVAL_REQUIRED`.
-8. The human clicks **Approve selection**.
-9. Only then can the commit succeed.
-10. A verification receipt is generated.
-
-This single flow demonstrates the core claims: native WebMCP, outcome verification, recovery, enforced human authority, and evidence.
-
-## Tool behavior summary
-
-| Tool | Purpose | Guardrail |
-|---|---|---|
-| `get_goal_contract` | Read goal + authority | Requires locked contract |
-| `search_suppliers` | Discover candidates | Results remain unverified |
-| `verify_supplier` | Check every constraint | Produces explicit pass/fail |
-| `recover_from_failure` | Choose alternate route | Cannot weaken the contract |
-| `select_supplier` | Select candidate | Requires verified pass |
-| `request_human_approval` | Pause at authority boundary | Requires a selection |
-| `commit_selection` | Irreversible final action | Blocks without required approval |
-| `get_evidence_receipt` | Read mission evidence | Returns status, verification, approval and receipt |
-
-## Run locally
-
-No application dependencies, credentials, API keys, or external services are required.
-
-```bash
-python -m http.server 4173 --bind 127.0.0.1
-```
-
-Open `http://127.0.0.1:4173`.
-
-For Chrome WebMCP testing, enable:
-
-```text
-chrome://flags/#enable-webmcp-testing
-```
-
-Then relaunch Chrome and inspect:
-
-```js
-const tools = await document.modelContext.getTools();
-tools.map((tool) => tool.name);
-```
-
-Chrome's current testing implementation accepts tool input as a JSON string:
-
-```js
-const tools = await document.modelContext.getTools();
-const verify = tools.find((tool) => tool.name === "verify_supplier");
-await document.modelContext.executeTool(
-  verify,
-  JSON.stringify({ supplier_id: "atlas" })
-);
-```
-
-## Safety, trust, and implementation evidence
-
-- No credentials or secrets are stored in the client.
-- The supplier dataset is deterministic demo data and does not place a real order.
-- A candidate cannot be selected unless verification passes.
-- Final commitment is technically blocked when required human approval is missing.
-- Recovery changes the route, never the locked human constraints.
-- Read-only tools are annotated with `readOnlyHint: true`.
-- Production sends a restrictive Content Security Policy plus `nosniff`, Referrer Policy, and Permissions Policy headers.
-- Source is public and inspectable.
-- MIT license: [`LICENSE`](./LICENSE).
-
-## Hackathon scope
-
-This is a standalone WebMCP application created during the WebMCP Challenge submission period. The Goal Contract UI, state machine, native WebMCP registration, verification and recovery behavior, human approval gate, evidence receipt, and judge-facing proof surface were implemented for this challenge.
+1. Run **Run the decision demo**.
+2. Watch the market exploration and 17 → 3 decision compression.
+3. Choose **Preserve deadline + exact spec**.
+4. Watch Cobalt fail from 200 → 150.
+5. Watch the agent repair locally to Atlas 300 + Cobalt 150 + Echo 100.
+6. Observe `FINAL_COMMIT_APPROVAL_REQUIRED`.
+7. Approve final commitment.
+8. Inspect the decision provenance receipt.

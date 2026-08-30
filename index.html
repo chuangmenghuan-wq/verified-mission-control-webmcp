@@ -1,211 +1,38 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Verified Mission Control is a WebMCP-native governance and execution layer for agents: goal contracts, human authority, outcome verification, recovery, and evidence receipts." />
-  <title>Verified Mission Control — WebMCP-native agent governance</title>
+  <meta name="description" content="Verified Mission Control is a WebMCP-native decision control plane for agents: goal contracts, trade-off decisions, bounded recovery, verification, and evidence." />
+  <title>Verified Mission Control — Decision Control for WebMCP Agents</title>
   <link rel="stylesheet" href="./styles.css" />
 </head>
 <body>
-  <div class="shell">
-    <header class="topbar">
-      <div class="brand">
-        <span class="brand-mark">V</span>
-        <div><strong>Verified Mission Control</strong><span>Future Ability · Native WebMCP</span></div>
-      </div>
-      <div class="protocol-pill" id="webmcpStatus"><span class="dot"></span>Detecting native WebMCP...</div>
-    </header>
-
-    <main>
-      <section class="hero">
-        <p class="eyebrow">WEBMCP-NATIVE AGENT GOVERNANCE / EXECUTION LAYER</p>
-        <h1>WebMCP gives agents tools.<br /><em>Mission Control makes them accountable.</em></h1>
-        <p class="hero-copy">Verified Mission Control puts a Goal Contract around typed WebMCP tools: human authority gates, outcome verification, recovery without weakening the goal, and a durable evidence receipt. <strong>Supplier selection below is only a demonstration scenario.</strong></p>
-
-        <div class="proof-ribbon" aria-label="Core proof">
-          <span><b>Native WebMCP</b><small>document.modelContext</small></span>
-          <span><b>8 typed tools</b><small>real registered surface</small></span>
-          <span><b>Human authority</b><small>technically enforced</small></span>
-          <span><b>Verification</b><small>outcome checked</small></span>
-          <span><b>Recovery</b><small>goal never weakened</small></span>
-          <span><b>Evidence receipt</b><small>inspectable result</small></span>
-        </div>
-
-        <div class="hero-actions">
-          <button class="primary" id="runDemoBtn">Run the judge path</button>
-          <button class="ghost" id="resetBtn">Reset mission</button>
-          <a class="ghost link-button" href="https://github.com/chuangmenghuan-wq/verified-mission-control-webmcp" target="_blank" rel="noreferrer">Public repo ↗</a>
-        </div>
-        <p class="scenario-note"><span>DEMO SCENARIO</span> Supplier selection is a concrete test harness for a general-purpose agent governance layer.</p>
-      </section>
-
-      <section class="demo-progress" id="demoProgress" aria-live="polite">
-        <div class="demo-progress-head"><span>LIVE JUDGE PATH</span><strong id="demoNarration">Ready — press Run the judge path</strong></div>
-        <div class="demo-stages">
-          <span id="stageContract"><b>1</b>Contract</span><span id="stageSearch"><b>2</b>Search</span><span id="stageVerify"><b>3</b>Verify</span>
-          <span id="stageRecover"><b>4</b>Recover</span><span id="stageAuthority"><b>5</b>Authority</span><span id="stageReceipt"><b>6</b>Receipt</span>
-        </div>
-      </section>
-
-      <section class="identity-strip" aria-label="Product identity">
-        <div>
-          <span class="step-label">THE PRODUCT</span>
-          <strong>Goal Contracts for the agent-native web</strong>
-          <p>A reusable control layer between human intent and WebMCP tool execution.</p>
-        </div>
-        <div>
-          <span class="step-label">THE DEMO</span>
-          <strong>Supplier selection</strong>
-          <p>One scenario chosen to make verification, recovery, authority and evidence easy to inspect.</p>
-        </div>
-      </section>
-
-      <section class="grid" id="demoGrid">
-        <article class="panel contract-panel" id="contractPanel">
-          <div class="panel-heading"><div><span class="step-label">01 · HUMAN</span><h2>Goal Contract</h2></div><span class="badge human">Authority</span></div>
-          <p class="muted">The agent can read these constraints, but cannot silently expand them.</p>
-          <div class="contract-form">
-            <label>Mission<input id="goalInput" value="Source 500 industrial sensors" /></label>
-            <div class="two-col">
-              <label>Budget ceiling<input id="budgetInput" type="number" value="10000" /></label>
-              <label>Delivery max (days)<input id="daysInput" type="number" value="7" /></label>
-            </div>
-            <label>Blocked regions<input id="blockedInput" value="Restricted regions" /></label>
-            <label class="check"><input id="approvalInput" type="checkbox" checked /> Human approval required before commitment</label>
-            <button class="secondary" id="applyContractBtn">Lock contract</button>
-          </div>
-          <div class="contract-seal" id="contractSeal">Contract unlocked</div>
-        </article>
-
-        <article class="panel execution-panel" id="executionPanel">
-          <div class="panel-heading"><div><span class="step-label">02 · AGENT</span><h2>Live WebMCP Execution</h2></div><span class="badge agent">WebMCP</span></div>
-          <div class="mission-state" id="missionState">
-            <span class="state-icon">WAIT</span>
-            <div><strong>Waiting for mission</strong><p>Lock a Goal Contract or run the guided demo.</p></div>
-          </div>
-          <div class="supplier-list" id="supplierList"></div>
-          <div class="approval-box hidden" id="approvalBox">
-            <div><span class="step-label">HUMAN CHECKPOINT</span><strong id="approvalTitle">Approval requested</strong><p id="approvalCopy"></p></div>
-            <button class="approve" id="approveBtn">Approve selection</button>
-          </div>
-        </article>
-
-        <article class="panel evidence-panel" id="evidencePanel">
-          <div class="panel-heading"><div><span class="step-label">03 · OUTCOME</span><h2>Enforcement + Evidence</h2></div><span class="badge evidence">Proof</span></div>
-
-          <div class="gate-proof" id="gateProof">
-            <div class="gate-proof-head">
-              <span class="step-label" id="gateProofStatus">ENFORCED AUTHORITY GATE</span>
-              <code>commit_selection()</code>
-            </div>
-            <div class="gate-proof-result">
-              <strong>BLOCKED</strong>
-              <code id="gateProofCode">HUMAN_APPROVAL_REQUIRED</code>
-            </div>
-            <p id="gateProofCopy">The judge path intentionally attempts commitment before approval. The tool must return a real blocking error before the human can unlock the final action.</p>
-          </div>
-
-          <div class="receipt-empty" id="receiptEmpty">
-            <div class="receipt-ring">0%</div>
-            <p>No verified outcome yet.</p>
-          </div>
-          <div class="receipt hidden" id="receipt">
-            <div class="receipt-top"><span class="pass-mark">✓</span><div><strong>GOAL ACHIEVED</strong><p id="receiptSupplier"></p></div></div>
-            <div class="metrics">
-              <div><span id="metricTools">0</span><small>tool calls</small></div>
-              <div><span id="metricFailures">0</span><small>failures recovered</small></div>
-              <div><span id="metricApprovals">0</span><small>human approvals</small></div>
-            </div>
-            <div class="receipt-id"><span>Receipt</span><code id="receiptId"></code></div>
-          </div>
-          <div class="timeline" id="timeline"></div>
-        </article>
-      </section>
-
-      <section class="tool-strip">
-        <div><span class="step-label">NATIVE WEBMCP TOOL SURFACE</span><h2>Eight typed tools expose the workflow directly to agents.</h2><p class="muted">No screen-scraping contract is required for the agent path.</p></div>
-        <div class="tool-chips" id="toolChips"></div>
-      </section>
-
-      <section class="why-webmcp">
-        <div class="section-heading">
-          <span class="step-label">WHY WEBMCP</span>
-          <h2>From brittle UI imitation to typed, governable actions.</h2>
-          <p>WebMCP is not decoration here. It is the interface that makes the agent path explicit enough to verify and govern.</p>
-        </div>
-        <div class="compare-grid">
-          <article class="compare-card legacy">
-            <span>TRADITIONAL UI AUTOMATION</span>
-            <h3>Guess what the page means</h3>
-            <ul>
-              <li>Click selectors or coordinates</li>
-              <li>Infer intent from visible text</li>
-              <li>Break when layout changes</li>
-              <li>No typed error contract for authority boundaries</li>
-            </ul>
-          </article>
-          <article class="compare-card native">
-            <span>NATIVE WEBMCP + MISSION CONTROL</span>
-            <h3>Call explicit tools under a Goal Contract</h3>
-            <ul>
-              <li>Typed schemas and tool descriptions</li>
-              <li>Shared state between agent and visible UI</li>
-              <li>Machine-readable verification and recovery</li>
-              <li>Commit gate returns <code>HUMAN_APPROVAL_REQUIRED</code></li>
-            </ul>
-          </article>
-        </div>
-      </section>
-
-      <section class="judge-path">
-        <div class="section-heading">
-          <span class="step-label">60-SECOND JUDGE PATH</span>
-          <h2>One run proves the four claims.</h2>
-        </div>
-        <div class="judge-steps">
-          <div><b>1</b><span>Lock Goal Contract</span><small>Human defines success + authority.</small></div>
-          <div><b>2</b><span>Atlas fails delivery</span><small>Outcome verification rejects the cheap path.</small></div>
-          <div><b>3</b><span>Recover to Nova</span><small>Recovery changes the route, not the contract.</small></div>
-          <div><b>4</b><span>Commit is blocked</span><small><code>HUMAN_APPROVAL_REQUIRED</code> is returned.</small></div>
-          <div><b>5</b><span>Human approves</span><small>Only then can the irreversible action commit.</small></div>
-          <div><b>6</b><span>Receipt appears</span><small>Final state is inspectable evidence.</small></div>
-        </div>
-      </section>
-
-      <section class="implementation-proof">
-        <div>
-          <span class="step-label">IMPLEMENTATION EVIDENCE</span>
-          <h2>Open source, inspectable, and native.</h2>
-          <p>The same application logic powers both the human UI and the WebMCP tool surface. The implementation uses native <code>document.modelContext.registerTool()</code>; no MCP server shim is required for this demo.</p>
-          <div class="repo-actions">
-            <a href="https://github.com/chuangmenghuan-wq/verified-mission-control-webmcp" target="_blank" rel="noreferrer">GitHub repository ↗</a>
-            <a href="https://github.com/chuangmenghuan-wq/verified-mission-control-webmcp/blob/main/app.js" target="_blank" rel="noreferrer">Native tool source ↗</a>
-            <a href="https://github.com/chuangmenghuan-wq/verified-mission-control-webmcp/blob/main/LICENSE" target="_blank" rel="noreferrer">MIT License ↗</a>
-          </div>
-        </div>
-        <pre><code>document.modelContext.registerTool({
-  name: "commit_selection",
-  description: "Finalize only after verification + approval.",
-  inputSchema: { type: "object", properties: {} },
-  execute: toolCommitSelection
-});</code></pre>
-      </section>
-
-      <section class="manifesto">
-        <p>WebMCP gives agents tools.</p>
-        <h2>Verified Mission Control gives those tools <em>accountability.</em></h2>
-        <div class="manifesto-grid">
-          <div><strong>Goal</strong><span>What must become true?</span></div>
-          <div><strong>Authority</strong><span>What may the agent change?</span></div>
-          <div><strong>Verification</strong><span>Did the outcome satisfy the contract?</span></div>
-          <div><strong>Recovery</strong><span>What happens when the first path fails?</span></div>
-        </div>
-      </section>
-    </main>
-
-    <footer><span>Built for The WebMCP Challenge · 2026</span><span>Future Ability · MIT licensed</span></footer>
-  </div>
-  <script type="module" src="./app.js"></script>
-</body>
-</html>
+<div class="shell">
+<header class="topbar"><div class="brand"><span class="brand-mark">V</span><div><strong>Verified Mission Control</strong><span>Future Ability · Native WebMCP</span></div></div><div class="protocol-pill" id="webmcpStatus"><span class="dot"></span>Detecting native WebMCP...</div></header>
+<main>
+<section class="hero">
+  <p class="eyebrow">WEBMCP-NATIVE DECISION CONTROL PLANE FOR AGENTS</p>
+  <h1>AI explores the options.<br><em>Humans decide the trade-offs.</em></h1>
+  <p class="hero-copy">Give an agent a goal, not a brittle script. Mission Control lets the agent generate and repair plans, but keeps human judgment around decisions that change cost, time, specification, or irreversible commitment. <strong>Sensor fulfillment below is only the demonstration scenario.</strong></p>
+  <div class="plain-flow"><span>AI finds many ways</span><b>→</b><span>Mission Control verifies trade-offs</span><b>→</b><span>Human sees only real decisions</span><b>→</b><span>AI repairs inside authority</span><b>→</b><span>Evidence proves what happened</span></div>
+  <div class="proof-ribbon"><span><b>Native WebMCP</b><small>document.modelContext</small></span><span><b>9 typed tools</b><small>real registered surface</small></span><span><b>Decision compression</b><small>17 options → 3 choices</small></span><span><b>Bounded authority</b><small>human-owned trade-offs</small></span><span><b>Plan repair</b><small>recover without reset</small></span><span><b>Decision provenance</b><small>inspectable evidence</small></span></div>
+  <div class="hero-actions"><button class="primary" id="runDemoBtn">Run the decision demo</button><button class="ghost" id="resetBtn">Reset mission</button><a class="ghost link-button" href="https://github.com/chuangmenghuan-wq/verified-mission-control-webmcp" target="_blank" rel="noreferrer">Public repo ↗</a></div>
+  <p class="scenario-note"><span>DEMO SCENARIO</span> Fulfill 500 sensors under deadline, budget, specification, and authority constraints.</p>
+</section>
+<section class="demo-progress"><div class="demo-progress-head"><span>LIVE DECISION PATH</span><strong id="demoNarration">Ready — press Run the decision demo</strong></div><div class="stage-track"><div class="stage" id="stageGoal"><b>1</b><span>Goal</span></div><div class="stage" id="stageExplore"><b>2</b><span>Explore</span></div><div class="stage" id="stagePlans"><b>3</b><span>Plans</span></div><div class="stage" id="stageDecision"><b>4</b><span>Decision</span></div><div class="stage" id="stageRepair"><b>5</b><span>Repair</span></div><div class="stage" id="stageCommit"><b>6</b><span>Commit</span></div><div class="stage" id="stageEvidence"><b>7</b><span>Evidence</span></div></div></section>
+<section class="mission-grid">
+  <article class="panel" id="contractPanel"><div class="panel-heading"><div><span class="step-label">01 · HUMAN GOAL</span><h2>Goal Contract</h2></div><span class="badge human">Human-owned</span></div><p class="muted">The agent may search and compose plans. It cannot silently rewrite these hard constraints.</p><div class="goal-card"><div><span>Need</span><strong>500 sensors</strong></div><div><span>Deadline</span><strong>≤ 7 days</strong></div><div><span>Base budget</span><strong>≤ $8,500</strong></div><div><span>Specification</span><strong>Exact model</strong></div></div><div class="authority-card"><span class="step-label">AUTHORITY</span><p>AI may split orders and repair execution only inside a human-authorized decision envelope. Final irreversible commitment always requires explicit approval.</p></div><button class="secondary" id="lockGoalBtn">Lock Goal Contract</button><div class="contract-seal" id="contractSeal">Contract unlocked</div></article>
+  <article class="panel" id="marketPanel"><div class="panel-heading"><div><span class="step-label">02 · AI EXPLORATION</span><h2>Fragmented Market</h2></div><span class="badge agent">WebMCP</span></div><div class="market-empty" id="marketEmpty"><strong>No options explored yet</strong><p>The agent must discover real constraints before it can plan.</p></div><div class="supplier-list" id="supplierList"></div></article>
+</section>
+<section class="wide-section" id="planSection"><div class="section-heading"><span class="step-label">03 · PLAN GENERATION + VERIFICATION</span><h2>There is no zero-trade-off answer.</h2><p>The agent generates combinations, removes impossible or dominated routes, then compresses the meaningful choices into three plans.</p></div><div class="compression-strip"><span><b id="rawPlanCount">0</b><small>raw combinations</small></span><i>→</i><span><b id="rejectedPlanCount">0</b><small>rejected / dominated</small></span><i>→</i><span class="accent"><b id="decisionPlanCount">0</b><small>human-relevant plans</small></span></div><div class="plan-grid" id="planGrid"></div></section>
+<section class="wide-section" id="decisionSection"><div class="section-heading"><span class="step-label">04 · HUMAN DECISION PACKAGE</span><h2>Which constraint are you willing to trade?</h2><p>The agent does not ask you to inspect every supplier. It presents only the choices that require human judgment.</p></div><div class="decision-callout"><strong>Original Goal Contract is currently infeasible.</strong><p>Choose one bounded exception. The original Goal Contract remains recorded; your decision creates a temporary authority envelope.</p></div><div class="decision-grid" id="decisionGrid"></div><div class="decision-status" id="decisionStatus">No human trade-off decision recorded.</div></section>
+<section class="execution-grid">
+  <article class="panel" id="executionPanel"><div class="panel-heading"><div><span class="step-label">05 · EXECUTION + PLAN REPAIR</span><h2>Repair, don't restart</h2></div><span class="badge agent">Bounded autonomy</span></div><div class="execution-state" id="executionState"><span class="state-icon">WAIT</span><div><strong>Waiting for an authorized plan</strong><p>Execution starts only after the human decision package is resolved.</p></div></div><div class="repair-flow" id="repairFlow"></div></article>
+  <article class="panel" id="authorityPanel"><div class="panel-heading"><div><span class="step-label">06 · IRREVERSIBLE ACTION</span><h2>Final Authority Gate</h2></div><span class="badge human">Enforced</span></div><div class="gate-proof" id="gateProof"><div class="gate-proof-head"><span class="step-label" id="gateProofStatus">NOT REACHED</span><code>commit_plan()</code></div><div class="gate-proof-result"><strong id="gateProofResult">WAITING</strong><code id="gateProofCode">FINAL_COMMIT_APPROVAL_REQUIRED</code></div><p id="gateProofCopy">Even an authorized repaired plan cannot commit an irreversible action until the human gives final approval.</p></div><div class="final-approval hidden" id="finalApprovalBox"><strong>Final plan is verified and ready to commit.</strong><p id="finalApprovalCopy"></p><button class="approve" id="finalApproveBtn">Approve final commitment</button></div></article>
+  <article class="panel" id="evidencePanel"><div class="panel-heading"><div><span class="step-label">07 · DECISION PROVENANCE</span><h2>Evidence Receipt</h2></div><span class="badge evidence">Proof</span></div><div class="receipt-empty" id="receiptEmpty"><div class="receipt-ring">0%</div><p>No verified outcome yet.</p></div><div class="receipt hidden" id="receipt"><div class="receipt-top"><span class="pass-mark">✓</span><div><strong>GOAL ACHIEVED</strong><p id="receiptSummary"></p></div></div><div class="metrics"><div><span id="metricOptions">0</span><small>options explored</small></div><div><span id="metricDecisions">0</span><small>human decisions</small></div><div><span id="metricRepairs">0</span><small>autonomous repairs</small></div></div><div class="receipt-id"><span>Receipt</span><code id="receiptId"></code></div></div><div class="timeline" id="timeline"></div></article>
+</section>
+<section class="tool-strip"><div><span class="step-label">NATIVE WEBMCP TOOL SURFACE</span><h2>Nine typed tools expose the decision loop directly to agents.</h2><p class="muted">Human decisions remain human UI actions — deliberately not callable as agent tools.</p></div><div class="tool-chips" id="toolChips"></div></section>
+<section class="wide-section"><div class="section-heading"><span class="step-label">WHY THIS NEEDS WEBMCP</span><h2>Typed actions are the substrate; Mission Control governs the decision space.</h2></div><div class="compare-grid"><article class="compare-card legacy"><span>PLAIN UI AUTOMATION</span><h3>Follow the page</h3><ul><li>Click whatever looks like the next action</li><li>Hard to distinguish goal constraints from page text</li><li>Recovery often means restarting a flow</li><li>Human approval can degrade into a visual convention</li></ul></article><article class="compare-card native"><span>WEBMCP + VERIFIED MISSION CONTROL</span><h3>Operate inside a governed decision space</h3><ul><li>Typed tools expose exploration, planning, repair, and commit</li><li>Goal Contract stays machine-readable and immutable</li><li>Human trade-offs create explicit bounded authority</li><li>Evidence records why the final plan was allowed</li></ul></article></div></section>
+<section class="manifesto"><p>WebMCP gives agents tools.</p><h2>Verified Mission Control decides <em>what the agent may decide.</em></h2><div class="manifesto-grid"><div><strong>Explore</strong><span>Find many ways to reach the goal.</span></div><div><strong>Compress</strong><span>Surface only meaningful trade-offs.</span></div><div><strong>Authorize</strong><span>Turn human judgment into bounded authority.</span></div><div><strong>Repair</strong><span>Adapt execution without silently changing the goal.</span></div></div></section>
+</main><footer><span>Built for The WebMCP Challenge · 2026</span><span>Future Ability · MIT licensed</span></footer></div><script type="module" src="./app.js"></script></body></html>
