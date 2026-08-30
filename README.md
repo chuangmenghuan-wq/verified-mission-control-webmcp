@@ -76,6 +76,8 @@ The app registers nine native tools with `document.modelContext.registerTool(...
 8. `commit_plan()`
 9. `get_evidence_receipt()`
 
+In a WebMCP-enabled browser, the guided demo itself executes these tools through `document.modelContext.executeTool(...)`. The live UI includes a native execution trace showing each typed call and its machine-readable result. Ordinary browsers use the same underlying functions only as a preview fallback.
+
 Human authorization itself is deliberately **not** exposed as an agent-callable tool. The agent can request a decision, but only a human UI action can create or expand authority.
 
 ## Enforced gates
