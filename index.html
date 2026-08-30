@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Verified Mission Control - Goal Contracts, verification, recovery and evidence for the agent-native web." />
+  <title>Verified Mission Control</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <div class="shell">
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-mark">V</span>
+        <div><strong>Verified Mission Control</strong><span>Future Ability ? WebMCP</span></div>
+      </div>
+      <div class="protocol-pill" id="webmcpStatus"><span class="dot"></span>Detecting WebMCP...</div>
+    </header>
+
+    <main>
+      <section class="hero">
+        <p class="eyebrow">GOAL CONTRACTS FOR THE AGENT-NATIVE WEB</p>
+        <h1>Agents should not just <em>act.</em><br />They should know when the goal is actually <em>done.</em></h1>
+        <p class="hero-copy">Humans define the mission and authority boundary. WebMCP gives the agent structured tools. Verified Mission Control checks outcomes, recovers from failure, and leaves a receipt.</p>
+        <div class="hero-actions">
+          <button class="primary" id="runDemoBtn">Run guided demo</button>
+          <button class="ghost" id="resetBtn">Reset mission</button>
+        </div>
+      </section>
+
+      <section class="grid">
+        <article class="panel contract-panel">
+          <div class="panel-heading"><div><span class="step-label">01 繚 HUMAN</span><h2>Goal Contract</h2></div><span class="badge human">Authority</span></div>
+          <p class="muted">The agent can read these constraints, but cannot silently expand them.</p>          <div class="contract-form">
+            <label>Mission<input id="goalInput" value="Source 500 industrial sensors" /></label>
+            <div class="two-col">
+              <label>Budget ceiling<input id="budgetInput" type="number" value="10000" /></label>
+              <label>Delivery max (days)<input id="daysInput" type="number" value="7" /></label>
+            </div>
+            <label>Blocked regions<input id="blockedInput" value="Restricted regions" /></label>
+            <label class="check"><input id="approvalInput" type="checkbox" checked /> Human approval required before commitment</label>
+            <button class="secondary" id="applyContractBtn">Lock contract</button>
+          </div>
+          <div class="contract-seal" id="contractSeal">Contract unlocked</div>
+        </article>
+
+        <article class="panel execution-panel">
+          <div class="panel-heading"><div><span class="step-label">02 繚 AGENT</span><h2>Live Execution</h2></div><span class="badge agent">WebMCP</span></div>
+          <div class="mission-state" id="missionState">
+            <span class="state-icon">WAIT</span>
+            <div><strong>Waiting for mission</strong><p>Lock a Goal Contract or run the guided demo.</p></div>
+          </div>
+          <div class="supplier-list" id="supplierList"></div>
+          <div class="approval-box hidden" id="approvalBox">
+            <div><span class="step-label">HUMAN CHECKPOINT</span><strong id="approvalTitle">Approval requested</strong><p id="approvalCopy"></p></div>
+            <button class="approve" id="approveBtn">Approve selection</button>
+          </div>
+        </article>
+
+        <article class="panel evidence-panel">
+          <div class="panel-heading"><div><span class="step-label">03 繚 OUTCOME</span><h2>Verification Receipt</h2></div><span class="badge evidence">Evidence</span></div>          <div class="receipt-empty" id="receiptEmpty">
+            <div class="receipt-ring">0%</div>
+            <p>No verified outcome yet.</p>
+          </div>
+          <div class="receipt hidden" id="receipt">
+            <div class="receipt-top"><span class="pass-mark">PASS</span><div><strong>GOAL ACHIEVED</strong><p id="receiptSupplier"></p></div></div>
+            <div class="metrics">
+              <div><span id="metricTools">0</span><small>tools used</small></div>
+              <div><span id="metricFailures">0</span><small>failures recovered</small></div>
+              <div><span id="metricApprovals">0</span><small>human approvals</small></div>
+            </div>
+            <div class="receipt-id"><span>Receipt</span><code id="receiptId"></code></div>
+          </div>
+          <div class="timeline" id="timeline"></div>
+        </article>
+      </section>
+
+      <section class="tool-strip">
+        <div><span class="step-label">WEBMCP TOOL SURFACE</span><h2>The website tells agents what they can safely do.</h2></div>
+        <div class="tool-chips" id="toolChips"></div>
+      </section>
+
+      <section class="manifesto">
+        <p>WebMCP gives agents tools.</p>
+        <h2>Verified Mission Control gives those tools <em>accountability.</em></h2>
+        <div class="manifesto-grid">
+          <div><strong>Goal</strong><span>What must become true?</span></div>
+          <div><strong>Authority</strong><span>What may the agent change?</span></div>
+          <div><strong>Verification</strong><span>Did the outcome satisfy the contract?</span></div>
+          <div><strong>Recovery</strong><span>What happens when the first path fails?</span></div>
+        </div>
+      </section>
+    </main>
+
+    <footer><span>Built for The WebMCP Challenge 繚 2026</span><span>Future Ability</span></footer>
+  </div>
+  <script type="module" src="./app.js"></script>
+</body>
+</html>
