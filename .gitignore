@@ -1,4 +1,5 @@
 runtime/
 .vercel/
+.chrome-*/
 .DS_Store
 Thumbs.db
