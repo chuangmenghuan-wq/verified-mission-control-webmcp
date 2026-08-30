@@ -1,0 +1,8 @@
+.git
+.chrome-production-test
+.chrome-*
+submission
+runtime
+.vercel
+.env*
+*.log
