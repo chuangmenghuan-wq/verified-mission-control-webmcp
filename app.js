@@ -9,6 +9,7 @@ const els = Object.fromEntries([
   "applyContractBtn", "contractSeal", "runDemoBtn", "resetBtn", "missionState", "supplierList",
   "approvalBox", "approvalTitle", "approvalCopy", "approveBtn", "receiptEmpty", "receipt",
   "receiptSupplier", "metricTools", "metricFailures", "metricApprovals", "receiptId", "timeline", "toolChips",
+  "gateProof", "gateProofStatus", "gateProofCode", "gateProofCopy",
 ].map((id) => [id, document.getElementById(id)]));
 
 const freshState = () => ({
@@ -23,6 +24,7 @@ const freshState = () => ({
   failures: 0,
   approvals: 0,
   receiptId: null,
+  blockedCommitAttempts: 0,
   events: [],
 });
 
@@ -40,7 +42,7 @@ function addEvent(kind, message) {
 
 function countTool(name) {
   state.toolCalls += 1;
-  addEvent("tool", `WebMCP 繚 ${name}`);
+  addEvent("tool", `WebMCP · ${name}`);
 }
 
 function setMission(icon, title, copy) {
@@ -70,7 +72,31 @@ function makeReceiptId() {
   let hash = 2166136261;
   for (const ch of seed) hash = Math.imul(hash ^ ch.charCodeAt(0), 16777619);
   return `VMC-${(hash >>> 0).toString(16).padStart(8, "0").toUpperCase()}`;
-}function renderReceipt() {
+}function renderGateProof(mode = "ready") {
+  els.gateProof.classList.remove("blocked", "committed");
+  if (mode === "blocked") {
+    els.gateProof.classList.add("blocked");
+    els.gateProofStatus.textContent = "LIVE ENFORCEMENT PROOF";
+    els.gateProofCode.textContent = "HUMAN_APPROVAL_REQUIRED";
+    els.gateProof.querySelector(".gate-proof-result strong").textContent = "BLOCKED";
+    els.gateProofCopy.textContent = "commit_selection() was actually called before approval and returned a blocking error. The agent cannot bypass this boundary.";
+    return;
+  }
+  if (mode === "committed") {
+    els.gateProof.classList.add("committed");
+    els.gateProofStatus.textContent = "AUTHORITY GATE SATISFIED";
+    els.gateProofCode.textContent = "BLOCKED → APPROVED → COMMITTED";
+    els.gateProof.querySelector(".gate-proof-result strong").textContent = "PROVEN";
+    els.gateProofCopy.textContent = "The first commit attempt was blocked. After explicit human approval, the same tool was allowed to complete.";
+    return;
+  }
+  els.gateProofStatus.textContent = "ENFORCED AUTHORITY GATE";
+  els.gateProofCode.textContent = "HUMAN_APPROVAL_REQUIRED";
+  els.gateProof.querySelector(".gate-proof-result strong").textContent = "BLOCKED";
+  els.gateProofCopy.textContent = "The judge path intentionally attempts commitment before approval. The tool must return a real blocking error before the human can unlock the final action.";
+}
+
+function renderReceipt() {
   if (!state.committed) {
     els.receiptEmpty.classList.remove("hidden");
     els.receipt.classList.add("hidden");
@@ -79,7 +105,7 @@ function makeReceiptId() {
   const supplier = suppliers.find((item) => item.id === state.selected);
   els.receiptEmpty.classList.add("hidden");
   els.receipt.classList.remove("hidden");
-  els.receiptSupplier.textContent = `${supplier.name} 繚 $${supplier.price.toLocaleString()} 繚 ${supplier.deliveryDays}-day delivery`;
+  els.receiptSupplier.textContent = `${supplier.name} · $${supplier.price.toLocaleString()} · ${supplier.deliveryDays}-day delivery`;
   els.metricTools.textContent = String(state.toolCalls);
   els.metricFailures.textContent = String(state.failures);
   els.metricApprovals.textContent = String(state.approvals);
@@ -123,6 +149,7 @@ function resetMission({ preserveInputs = true } = {}) {
   setMission("WAIT", "Waiting for mission", "Lock a Goal Contract or run the guided demo.");
   renderTimeline();
   renderReceipt();
+  renderGateProof("ready");
   if (!preserveInputs) {
     els.goalInput.value = "Source 500 industrial sensors";
     els.budgetInput.value = "10000";
@@ -170,7 +197,7 @@ function toolVerifySupplier({ supplier_id }) {
   if (!pass) {
     state.failures += 1;
     const failed = Object.entries(checks).filter(([, ok]) => !ok).map(([key]) => key).join(", ");
-    addEvent("fail", `${supplier.name} failed verification 繚 ${failed}`);
+    addEvent("fail", `${supplier.name} failed verification · ${failed}`);
     setMission("!", "Outcome verification failed", `${supplier.name} violates ${failed}. Recovery is required.`);
   } else {
     addEvent("pass", `${supplier.name} satisfies every contract constraint`);
@@ -184,7 +211,7 @@ function toolVerifySupplier({ supplier_id }) {
   if (!failed || failed.pass) return { ok: false, error: "NO_VERIFIED_FAILURE_TO_RECOVER" };
   const next = state.candidates.find((item) => item.id !== failed_supplier_id && !state.verified[item.id]);
   if (!next) return { ok: false, error: "NO_UNTRIED_CANDIDATE" };
-  addEvent("tool", `Recovery route 繚 ${next.name}`);
+  addEvent("tool", `Recovery route · ${next.name}`);
   setMission("REC", "Recovery path selected", `The first path failed. The agent is switching to ${next.name} without changing the Goal Contract.`);
   return { ok: true, next_supplier: next, instruction: "Verify this supplier before selecting it." };
 }
@@ -206,7 +233,7 @@ function toolRequestHumanApproval() {
   const supplier = suppliers.find((item) => item.id === state.selected);
   state.approvalRequested = true;
   els.approvalTitle.textContent = `${supplier.name} is verified and ready`;
-  els.approvalCopy.textContent = `$${supplier.price.toLocaleString()} 繚 ${supplier.deliveryDays} days 繚 final commitment remains human-controlled.`;
+  els.approvalCopy.textContent = `$${supplier.price.toLocaleString()} · ${supplier.deliveryDays} days · final commitment remains human-controlled.`;
   els.approvalBox.classList.remove("hidden");
   setMission("HUMAN", "Human decision required", "The agent has reached its authority boundary and cannot commit on its own.");
   addEvent("tool", "Human approval requested before irreversible commitment");
@@ -224,7 +251,10 @@ function humanApprove() {
   countTool("commit_selection");
   if (!state.selected) return { ok: false, error: "NO_SELECTED_SUPPLIER" };
   if (state.contract.approvalRequired && !state.approved) {
-    addEvent("fail", "Commit blocked 繚 human approval missing");
+    state.blockedCommitAttempts += 1;
+    addEvent("fail", "Commit blocked · HUMAN_APPROVAL_REQUIRED");
+    setMission("BLOCK", "Commit technically blocked", "The WebMCP tool returned HUMAN_APPROVAL_REQUIRED. The agent must stop for the human.");
+    renderGateProof("blocked");
     return { ok: false, error: "HUMAN_APPROVAL_REQUIRED", next: "Call request_human_approval and wait for the human." };
   }
   const verification = state.verified[state.selected];
@@ -232,9 +262,10 @@ function humanApprove() {
   state.committed = true;
   state.receiptId = makeReceiptId();
   const supplier = suppliers.find((item) => item.id === state.selected);
-  addEvent("pass", `Goal achieved 繚 ${supplier.name} committed`);
+  addEvent("pass", `Goal achieved · ${supplier.name} committed`);
   setMission("PASS", "Mission complete", "The final outcome satisfies the Goal Contract and a verification receipt is available.");
   renderReceipt();
+  renderGateProof("committed");
   return { ok: true, status: "GOAL_ACHIEVED", supplier, receipt_id: state.receiptId };
 }
 
@@ -248,6 +279,8 @@ function toolGetEvidenceReceipt() {
     verification: state.selected ? state.verified[state.selected] : null,
     human_approval: state.approved,
     recovered_failures: state.failures,
+    blocked_commit_attempts: state.blockedCommitAttempts,
+    authority_gate: state.approved ? "SATISFIED" : (state.blockedCommitAttempts ? "BLOCKED_PENDING_HUMAN" : "NOT_REACHED"),
     receipt_id: state.receiptId,
     recent_events: state.events.slice(0, 6),
   };
@@ -278,7 +311,7 @@ function renderToolChips() {
 }
 
 async function registerWebMCPTools() {
-  const modelContext = document.modelContext || navigator.modelContext;
+  const modelContext = document.modelContext;
   if (!modelContext?.registerTool) {
     els.webmcpStatus.innerHTML = '<span class="dot"></span>WebMCP preview mode';
     els.webmcpStatus.title = "Open in ChatGPT in-app browser or Chrome with WebMCP enabled to expose the native tool surface.";
@@ -317,6 +350,8 @@ async function runGuidedDemo() {
   await sleep(850);
   toolSelectSupplier({ supplier_id: "nova" });
   await sleep(650);
+  toolCommitSelection();
+  await sleep(900);
   toolRequestHumanApproval();
   els.runDemoBtn.textContent = "Waiting for human approval";
   demoRunning = false;
