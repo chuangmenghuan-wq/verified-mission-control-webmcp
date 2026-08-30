@@ -178,3 +178,28 @@ footer { display: flex; justify-content: space-between; padding-top: 24px; borde
   .judge-steps { grid-template-columns: 1fr 1fr; }
   .hero-actions { align-items: stretch; }
 }
+
+
+/* Live judge-path choreography */
+.demo-progress { margin-top: 22px; border: 1px solid rgba(93,231,255,.22); border-radius: 16px; padding: 13px 14px 14px; background: rgba(5,20,33,.72); transition: .25s ease; }
+.demo-progress-head { display:flex; align-items:center; justify-content:space-between; gap:14px; margin-bottom:11px; }
+.demo-progress-head span { color:var(--cyan); font-size:10px; letter-spacing:.14em; font-weight:850; }
+.demo-progress-head strong { color:#d8e7f3; font-size:12px; font-weight:650; text-align:right; }
+.demo-stages { display:grid; grid-template-columns:repeat(6,1fr); gap:7px; }
+.demo-stages span { min-height:38px; display:flex; align-items:center; gap:7px; padding:8px 9px; border-radius:10px; border:1px solid var(--line); color:#7891a7; background:rgba(255,255,255,.018); font-size:10px; font-weight:750; transition:.28s ease; }
+.demo-stages b { width:20px; height:20px; display:grid; place-items:center; border-radius:50%; background:rgba(255,255,255,.05); }
+.demo-stages span.complete { color:var(--green); border-color:rgba(118,248,180,.22); background:rgba(118,248,180,.04); }
+.demo-stages span.active { color:#06151d; border-color:var(--cyan); background:linear-gradient(135deg,var(--green),var(--cyan)); transform:translateY(-2px); box-shadow:0 8px 25px rgba(93,231,255,.13); }
+.demo-live .demo-progress { position:sticky; top:10px; z-index:20; box-shadow:0 18px 55px rgba(0,0,0,.28); backdrop-filter:blur(18px); }
+.panel.demo-active { border-color:rgba(93,231,255,.55); box-shadow:0 0 0 2px rgba(93,231,255,.08),0 24px 80px rgba(0,0,0,.25); transform:translateY(-3px); }
+.panel { transition:border-color .3s ease, box-shadow .3s ease, transform .3s ease; }
+@keyframes failPop { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-7px)} 40%{transform:translateX(7px)} 60%{transform:translateX(-4px)} 80%{transform:translateX(4px)} }
+@keyframes recoverPop { 0%{box-shadow:0 0 0 0 rgba(93,231,255,.35)} 100%{box-shadow:0 0 0 14px rgba(93,231,255,0)} }
+@keyframes passPop { 0%{transform:scale(.98)} 55%{transform:scale(1.025)} 100%{transform:scale(1)} }
+.supplier.demo-fail-pop { animation:failPop .48s ease; }
+.supplier.demo-recover-pop { border-color:rgba(93,231,255,.7); animation:recoverPop .75s ease; }
+.supplier.demo-pass-pop { animation:passPop .55s ease; box-shadow:0 0 28px rgba(118,248,180,.12); }
+.approval-box:not(.hidden) { animation:passPop .45s ease; box-shadow:0 0 0 1px rgba(255,208,106,.15),0 18px 45px rgba(0,0,0,.18); }
+.gate-proof.blocked { animation:failPop .45s ease; }
+.receipt:not(.hidden) { animation:passPop .55s ease; }
+@media(max-width:700px){ .demo-progress-head{align-items:flex-start;flex-direction:column}.demo-progress-head strong{text-align:left}.demo-stages{grid-template-columns:repeat(3,1fr)}.demo-live .demo-progress{top:6px} }

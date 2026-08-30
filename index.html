@@ -40,6 +40,14 @@
         <p class="scenario-note"><span>DEMO SCENARIO</span> Supplier selection is a concrete test harness for a general-purpose agent governance layer.</p>
       </section>
 
+      <section class="demo-progress" id="demoProgress" aria-live="polite">
+        <div class="demo-progress-head"><span>LIVE JUDGE PATH</span><strong id="demoNarration">Ready — press Run the judge path</strong></div>
+        <div class="demo-stages">
+          <span id="stageContract"><b>1</b>Contract</span><span id="stageSearch"><b>2</b>Search</span><span id="stageVerify"><b>3</b>Verify</span>
+          <span id="stageRecover"><b>4</b>Recover</span><span id="stageAuthority"><b>5</b>Authority</span><span id="stageReceipt"><b>6</b>Receipt</span>
+        </div>
+      </section>
+
       <section class="identity-strip" aria-label="Product identity">
         <div>
           <span class="step-label">THE PRODUCT</span>
@@ -53,8 +61,8 @@
         </div>
       </section>
 
-      <section class="grid">
-        <article class="panel contract-panel">
+      <section class="grid" id="demoGrid">
+        <article class="panel contract-panel" id="contractPanel">
           <div class="panel-heading"><div><span class="step-label">01 · HUMAN</span><h2>Goal Contract</h2></div><span class="badge human">Authority</span></div>
           <p class="muted">The agent can read these constraints, but cannot silently expand them.</p>
           <div class="contract-form">
@@ -70,7 +78,7 @@
           <div class="contract-seal" id="contractSeal">Contract unlocked</div>
         </article>
 
-        <article class="panel execution-panel">
+        <article class="panel execution-panel" id="executionPanel">
           <div class="panel-heading"><div><span class="step-label">02 · AGENT</span><h2>Live WebMCP Execution</h2></div><span class="badge agent">WebMCP</span></div>
           <div class="mission-state" id="missionState">
             <span class="state-icon">WAIT</span>
@@ -83,7 +91,7 @@
           </div>
         </article>
 
-        <article class="panel evidence-panel">
+        <article class="panel evidence-panel" id="evidencePanel">
           <div class="panel-heading"><div><span class="step-label">03 · OUTCOME</span><h2>Enforcement + Evidence</h2></div><span class="badge evidence">Proof</span></div>
 
           <div class="gate-proof" id="gateProof">

@@ -10,6 +10,8 @@ const els = Object.fromEntries([
   "approvalBox", "approvalTitle", "approvalCopy", "approveBtn", "receiptEmpty", "receipt",
   "receiptSupplier", "metricTools", "metricFailures", "metricApprovals", "receiptId", "timeline", "toolChips",
   "gateProof", "gateProofStatus", "gateProofCode", "gateProofCopy",
+  "demoProgress", "demoNarration", "demoGrid", "contractPanel", "executionPanel", "evidencePanel",
+  "stageContract", "stageSearch", "stageVerify", "stageRecover", "stageAuthority", "stageReceipt",
 ].map((id) => [id, document.getElementById(id)]));
 
 const freshState = () => ({
@@ -30,7 +32,35 @@ const freshState = () => ({
 
 let state = freshState();
 let demoRunning = false;
-const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));function nowLabel() {
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+const demoStageIds = ["stageContract", "stageSearch", "stageVerify", "stageRecover", "stageAuthority", "stageReceipt"];
+
+function setDemoStage(activeIndex, narration, panel = null) {
+  demoStageIds.forEach((id, index) => {
+    const el = els[id];
+    el.classList.toggle("complete", index < activeIndex);
+    el.classList.toggle("active", index === activeIndex);
+  });
+  els.demoNarration.textContent = narration;
+  [els.contractPanel, els.executionPanel, els.evidencePanel].forEach((el) => el.classList.remove("demo-active"));
+  if (panel) panel.classList.add("demo-active");
+}
+
+function focusDemo(el) {
+  if (!el) return;
+  el.scrollIntoView({ behavior: "smooth", block: "center" });
+}
+
+function pulseSupplier(id, className) {
+  const el = els.supplierList.querySelector(`.supplier[data-id="${id}"]`);
+  if (!el) return;
+  el.classList.remove("demo-fail-pop", "demo-recover-pop", "demo-pass-pop");
+  void el.offsetWidth;
+  el.classList.add(className);
+}
+
+function nowLabel() {
   return new Date().toLocaleTimeString([], { hour12: false, hour: "2-digit", minute: "2-digit", second: "2-digit" });
 }
 
@@ -333,48 +363,72 @@ async function registerWebMCPTools() {
 async function runGuidedDemo() {
   if (demoRunning) return;
   resetMission({ preserveInputs: false });
+  document.body.classList.add("demo-live");
   demoRunning = true;
   els.runDemoBtn.disabled = true;
-  els.runDemoBtn.textContent = "Agent running...";
+  els.runDemoBtn.textContent = "Agent running — watch below";
+
+  setDemoStage(0, "Human locks the Goal Contract — the agent cannot expand it.", els.contractPanel);
+  focusDemo(els.demoGrid);
   lockContract();
-  await sleep(650);
+  await sleep(900);
+
   toolGetGoalContract();
-  await sleep(650);
+  setDemoStage(1, "WebMCP searches through the typed tool surface.", els.executionPanel);
   toolSearchSuppliers();
-  await sleep(850);
+  await sleep(1100);
+
+  setDemoStage(2, "Verifying Atlas against every locked constraint…", els.executionPanel);
   toolVerifySupplier({ supplier_id: "atlas" });
-  await sleep(1050);
+  pulseSupplier("atlas", "demo-fail-pop");
+  await sleep(1400);
+
+  setDemoStage(3, "Atlas failed delivery. Recovery changes the route — never the Goal Contract.", els.executionPanel);
   toolRecoverFromFailure({ failed_supplier_id: "atlas" });
-  await sleep(900);
+  pulseSupplier("nova", "demo-recover-pop");
+  await sleep(1200);
+
   toolVerifySupplier({ supplier_id: "nova" });
-  await sleep(850);
+  pulseSupplier("nova", "demo-pass-pop");
+  await sleep(1100);
   toolSelectSupplier({ supplier_id: "nova" });
-  await sleep(650);
+  await sleep(850);
+
+  setDemoStage(4, "The agent tries to commit before approval — Mission Control must block it.", els.evidencePanel);
   toolCommitSelection();
-  await sleep(900);
+  focusDemo(els.evidencePanel);
+  await sleep(1400);
   toolRequestHumanApproval();
-  els.runDemoBtn.textContent = "Waiting for human approval";
+  focusDemo(els.approvalBox);
+  els.runDemoBtn.textContent = "Blocked — waiting for human approval";
   demoRunning = false;
-}els.applyContractBtn.addEventListener("click", () => {
+}
+els.applyContractBtn.addEventListener("click", () => {
   if (!state.contract?.locked) lockContract();
 });
 
 els.resetBtn.addEventListener("click", () => {
   resetMission({ preserveInputs: false });
   els.runDemoBtn.disabled = false;
-  els.runDemoBtn.textContent = "Run guided demo";
+  els.runDemoBtn.textContent = "Run the judge path";
 });
 
 els.runDemoBtn.addEventListener("click", runGuidedDemo);
 
 els.approveBtn.addEventListener("click", async () => {
   if (!humanApprove()) return;
-  els.runDemoBtn.textContent = "Human approved - committing...";
-  await sleep(550);
+  setDemoStage(5, "Human approved. The same commit tool may now complete and issue evidence.", els.evidencePanel);
+  els.runDemoBtn.textContent = "Human approved — committing...";
+  focusDemo(els.evidencePanel);
+  await sleep(800);
   const result = toolCommitSelection();
   if (result.ok) {
+    toolGetEvidenceReceipt();
+    setDemoStage(6, "Mission complete — verification, recovery, authority and receipt are all proven.", els.evidencePanel);
     els.runDemoBtn.disabled = false;
-    els.runDemoBtn.textContent = "Replay guided demo";
+    els.runDemoBtn.textContent = "Replay judge path";
+    await sleep(300);
+    focusDemo(els.evidencePanel);
   }
 });
 
