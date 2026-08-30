@@ -12,11 +12,26 @@ Built for **The WebMCP Challenge 2026** by Future Ability. MIT licensed.
 
 Verified Mission Control is a **WebMCP-native decision control plane for agents**. It keeps the original human goal immutable, lets the agent explore and compose many plans, compresses the meaningful trade-offs for human judgment, turns those judgments into a bounded authority envelope, repairs execution inside that envelope, and records the full decision provenance.
 
-**Sensor fulfillment is only the demo scenario.** The reusable loop is:
+**The domain is configuration, not control logic.** Sensor fulfillment and production deployment now run through the same reusable loop:
 
 `Goal → Explore → Generate plans → Verify → Compress trade-offs → Human decision → Bounded repair → Final authority → Evidence`
 
-## The upgraded demo
+## Generic Decision / Policy Engine
+
+The control logic is split from domain data:
+
+- [`decision-engine.mjs`](./decision-engine.mjs) — generic constraint evaluation, decision-frontier compression, authority envelopes, and authorized repair selection. It contains no supplier or deployment-specific logic.
+- [`scenarios.mjs`](./scenarios.mjs) — domain configuration: Goal Contract, candidates, proposed authority envelopes, disruptions, and repair candidates.
+- [`app.js`](./app.js) — WebMCP tools + human UI. The same nine tools operate on whichever scenario is active.
+
+Current proof scenarios:
+
+1. **Sensor fulfillment** — quantity / deadline / budget / specification.
+2. **Production deployment** — completion / downtime / change cost / rollback safety.
+
+Both compress 7 candidate plans into 3 human-relevant trade-offs, enforce the same two human authority gates, repair an execution disruption inside bounded authority, and finish with a provenance receipt.
+
+## Sensor fulfillment demo
 
 The human Goal Contract is:
 
@@ -33,7 +48,7 @@ The market is intentionally fragmented:
 - Cobalt: 200 units / 6 days / $5,900 / exact spec
 - Delta: 500 units / 5 days / $8,200 / substitute model
 
-No single option satisfies every original constraint. The agent composes **17 raw combinations**, rejects impossible or dominated routes, and compresses them to three human-relevant plans:
+No single option satisfies every original constraint. The agent composes **7 candidate plans**, rejects impossible or dominated routes, and compresses them to three human-relevant plans:
 
 1. Preserve deadline + exact spec → Atlas 300 + Cobalt 200 → **budget +$1,900**
 2. Preserve budget + exact spec → Beacon 500 → **deadline +4 days**
@@ -67,7 +82,7 @@ Because the repair stays inside the pre-authorized decision space, the agent may
 The app registers nine native tools with `document.modelContext.registerTool(...)`:
 
 1. `get_goal_contract()`
-2. `discover_fulfillment_options()`
+2. `discover_options()`
 3. `generate_candidate_plans()`
 4. `verify_candidate_plans()`
 5. `request_human_decision()`
@@ -102,7 +117,7 @@ The final receipt records:
 
 - original Goal Contract
 - options explored
-- 17 → 3 plan compression
+- 7 → 3 plan compression
 - human trade-off decision
 - execution disruption
 - autonomous repair
@@ -128,8 +143,11 @@ Traditional UI automation can click the next-looking button. WebMCP gives the si
 
 ## Judge path
 
+Use the scenario switcher to run **Sensor fulfillment** or **Production deployment**. The native tool surface does not change when the domain changes.
+
+
 1. Run **Run the decision demo**.
-2. Watch the market exploration and 17 → 3 decision compression.
+2. Watch the market exploration and 7 → 3 decision compression.
 3. Choose **Preserve deadline + exact spec**.
 4. Watch Cobalt fail from 200 → 150.
 5. Watch the agent repair locally to Atlas 300 + Cobalt 150 + Echo 100.
