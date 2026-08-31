@@ -1,0 +1,14 @@
+﻿{
+  "name": "verified-mission-control-webmcp",
+  "version": "0.2.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test tests/*.test.mjs",
+    "verify:production": "node scripts/verify-production-native-webmcp.mjs"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}
+

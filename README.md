@@ -149,6 +149,21 @@ Traditional UI automation can click the next-looking button. WebMCP gives the si
 - `Permissions-Policy: tools=(self)`
 - CSP, `nosniff`, Referrer Policy, and Vercel HSTS
 
+## Reproducible evaluations
+
+The repository includes dependency-free Node tests plus a production Native WebMCP acceptance harness.
+
+```bash
+node --test tests/*.test.mjs
+node scripts/verify-production-native-webmcp.mjs
+```
+
+The unit suite verifies both domains use the same decision engine, non-relaxable goal failures never enter the human decision frontier, authorized repair stays inside the human envelope, provenance survives store re-instantiation, tampering breaks verification, and replay is ordered/read-only.
+
+The production harness launches a temporary WebMCP-enabled Chrome profile and verifies the live Vercel app end-to-end: nine native tools, both human authority gates, Sensor + Deployment completion, durable provenance, page-reload persistence, read-only replay, and SHA-256 chain integrity. It cleans up its temporary Chrome profile after the run.
+
+Latest local run before submission: **8/8 unit evals PASS + production Native WebMCP acceptance PASS**.
+
 ## Judge path
 
 Use the scenario switcher to run **Sensor fulfillment** or **Production deployment**. The native tool surface does not change when the domain changes.
