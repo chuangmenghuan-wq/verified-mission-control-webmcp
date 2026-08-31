@@ -126,6 +126,14 @@ The final receipt records:
 
 This is stronger than a success log: it explains **why the agent was allowed to do what it did**.
 
+## Durable + replayable provenance
+
+Completed missions are persisted in the browser as append-only provenance runs. Each event stores its sequence number, timestamp, structured payload, previous hash, and SHA-256 event hash. The final receipt exposes the durable run id, event count, final chain hash, and integrity result.
+
+The **Durable Provenance Vault** survives a page refresh. A judge can verify the latest chain or replay every recorded event in order. Replay is deliberately read-only: it never re-executes `commit_plan()` or any irreversible action.
+
+The current competition demo uses browser-persistent storage, so it proves reload durability and replayability without external credentials. The hash chain is **tamper-evident, not externally signed**; cross-device/server-backed attestation would be a production hardening step rather than something this demo pretends to provide.
+
 ## Why WebMCP
 
 Traditional UI automation can click the next-looking button. WebMCP gives the site a typed action surface. Verified Mission Control uses that surface as the substrate for a governed decision loop: machine-readable goals, explicit plan verification, typed errors at authority boundaries, bounded repair, and inspectable evidence.
@@ -154,3 +162,5 @@ Use the scenario switcher to run **Sensor fulfillment** or **Production deployme
 6. Observe `FINAL_COMMIT_APPROVAL_REQUIRED`.
 7. Approve final commitment.
 8. Inspect the decision provenance receipt.
+9. Refresh the page and confirm the durable run is still listed.
+10. Click **Verify latest chain**, then **Replay latest evidence** to inspect the read-only event history.
